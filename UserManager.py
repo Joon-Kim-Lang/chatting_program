@@ -14,6 +14,7 @@ class UserManager:
     count = 0
     def __init__(self):
         self.users ={}
+        self.disusers={}
 
     def addUser(self,username,new_password,conn,addr):
         if username in self.users:
@@ -34,13 +35,22 @@ class UserManager:
     def removeUser(self,username):
         if username not in self.users:
             return
-        conn,addr,_=self.users[username]
-        conn.sendall(DISCONNECT_MSG.encode())
-        lock.acquire()
-        del self.users[username]
-        lock.release()
-        self.sendMessageToAll(f"{username}님이 퇴장하셨습니다.")
-        print('--- 대화 참여자 수 [%d]' %len(self.users))
+        conn,addr,password=self.users[username]
+        try:
+            conn.sendall(DISCONNECT_MSG.encode())
+        except Exception as e:
+            lock.acquire()
+            del self.users[username]
+            lock.release()
+            disusers[username] = password
+            self.sendMessageToAll(f"{username}님이 비활성되었습니다.")
+            pass
+        else:
+            lock.acquire()
+            del self.users[username]
+            lock.release()
+            self.sendMessageToAll(f"{username}님이 퇴장하셨습니다.")
+            print('--- 대화 참여자 수 [%d]' %len(self.users))
 
     def messageHandler(self,username,msg):
         if msg[0] !="!":

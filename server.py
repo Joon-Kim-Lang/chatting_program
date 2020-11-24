@@ -72,7 +72,7 @@ def handle_client(username,conn,addr):
         except Exception as e:
             connected=False
             print(e)
-    print('[%s] 접속종료' %username)
+    print('[%s] 접속종료중' %username)
     user.removeUser(username)
 
 if __name__ == '__main__':
