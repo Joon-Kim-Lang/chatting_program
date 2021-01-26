@@ -11,7 +11,7 @@ MESSAGE_HEADER="[MESG]"
 DISCONNECT_MSG ="[!EXIT]"
 
 
-bf_size = 4294967296
+bf_size = 65536
 
 class Chating_gui(Frame):
     def __init__(self,master,sock,ID,Password):
@@ -111,7 +111,6 @@ class Chating_gui(Frame):
             try:
                 for _ in range(count):
                     data = self.sock.recv(bf_size)
-                    #print("data : ",data)
                     f.write(data)
             except Exception as e:
                 print(e)
@@ -134,6 +133,8 @@ class Chating_gui(Frame):
                     break
             except Exception as e:
                 print(e)
+                break
+                
     #thread 처리하기
     def chatting(self):
         self.master.mainloop()

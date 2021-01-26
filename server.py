@@ -10,7 +10,7 @@ FORMAT ="utf-8"
 DISCONNECT_MSG ="[!EXIT]"
 FILE_HEADER="[FILE]"
 MESSAGE_HEADER="[MESG]"
-bf_size = 4294967296
+bf_size = 65536
 
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 server.bind((HOST,PORT))
@@ -21,21 +21,28 @@ user = UserManager()
 def runServer():
     print("============채팅서버를 시작합니다.============")
     server.listen()
-    print("[LISTENING] server is listing")
+    print("[LISTENING] server is listening")
     while True:
         conn,addr=server.accept()
         client_info = conn.recv(1024).decode()
         username,password=client_info.split('/')
         #### user 추가하기
-        if user.addUser(username,password,conn,addr)==1:
+        case=user.addUser(username,password,conn,addr)
+        if case==1:
             conn.sendall("환영".encode())
             thread = threading.Thread(target=handle_client,args=(username,conn,addr))
             thread.demon=True
             thread.start()
-        elif user.addUser(username,password,conn,addr)==2:
+        elif case==2:
             conn.sendall("비틀림".encode())
-        elif user.addUser(username,password,conn,addr)==3:
+        elif case==3:
             conn.sendall("아중복".encode())
+        elif case==4:
+            conn.sendall("환영".encode())
+            thread = threading.Thread(target=handle_client,args=(username,conn,addr))
+            thread.demon=True
+            thread.start()
+            
             
             
 
@@ -62,7 +69,6 @@ def handle_client(username,conn,addr):
 
                 for i in range(count):
                     data = conn.recv(bf_size)
-                    print("data : ",  data)
                     user.sendFileToAll(username,data)
 
             #메세지라면 성공

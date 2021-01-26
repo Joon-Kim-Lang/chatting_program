@@ -17,11 +17,29 @@ class UserManager:
         self.disusers={}
 
     def addUser(self,username,new_password,conn,addr):
-        if username in self.users:
-            conn,add,old_password=self.users[username]
-            if old_password!=new_password:
-                return 2
-            return 3
+        print(username)
+        if username in self.users or username in self.disusers:
+            ####disusers
+            if username in self.disusers:
+                if self.disusers[username]!=new_password:
+                    return 2
+                else:
+                    ###정상
+                    lock.acquire()
+                    self.users[username]=(conn,addr,new_password)
+                    lock.release()
+                    del self.disusers[username]
+                    print(f'{username}님이 재입장하셨습니다.')
+                    return 4
+                    lock.release()
+                    
+            ####users
+            elif username in self.users:    
+                conn,add,old_password=self.users[username]
+                print(username,old_password)
+                if old_password!=new_password:
+                    return 2
+                return 3
 
         lock.acquire()
         self.users[username]=(conn,addr,new_password)
@@ -29,7 +47,7 @@ class UserManager:
         
         print(f'{username}님이 입장하셨습니다.')
         UserManager.count+=1
-        print(f"============대화 참여자 수  {len(self.users)}============")
+        print(f"============대화 참여자 수  {len(self.users)+len(self.disusers)}============")
         return 1
     
     def removeUser(self,username):
@@ -42,9 +60,9 @@ class UserManager:
             lock.acquire()
             del self.users[username]
             lock.release()
-            disusers[username] = password
+            self.disusers[username] = password
+            print(f"{username}님이 비활성되었습니다.")
             self.sendMessageToAll(f"{username}님이 비활성되었습니다.")
-            pass
         else:
             lock.acquire()
             del self.users[username]
@@ -66,7 +84,6 @@ class UserManager:
                 conn.send(MESSAGE_HEADER.encode())
                 conn.send(msg.encode())
         else:
-            print(msg,"function sendMessgeToALl")
             for conn,addr,_ in self.users.values():
                 conn.send(FILE_HEADER.encode())
                 conn.send(msg.encode())

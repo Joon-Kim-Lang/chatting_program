@@ -46,7 +46,7 @@ def login():
         client_info = f"{ID_entry.get()}/{password_entry.get()}"
         clientsock.send(client_info.encode())
         data=clientsock.recv(1024).decode()
-        if data=="환영":
+        if data=="환영":                
         #새로운창 만들기
             global chatingWindow,app,recvThread,appThread
             
